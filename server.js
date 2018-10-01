@@ -68,6 +68,28 @@ app.post('/register', (req, res) => {
     .catch(err => res.status(400).json('unable to register'))
 })
 
+app.post('/createstream', (req, res) => {
+  const { title, subject, headline, description } = req.body;
+    db.transaction(trx => {
+      trx.insert({
+        title: title,
+        subject: subject,
+        headline: headline,
+        description: description,
+        
+      })
+      .into('streams')
+      .returning('*')
+      .then(stream => {
+        res.json(stream[0]);
+      })
+      .then(trx.commit)
+      .catch(trx.rollback)
+    })
+    .catch(err => res.status(400).json('unable to create stream'))
+})
+
+
 app.get('/profile/:id', (req, res) => {
   const { id } = req.params;
   db.select('*').from('users').where({id})
