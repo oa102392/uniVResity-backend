@@ -15,7 +15,7 @@ const db = knex({
 });
 
 db.select('*').from('users').then(data =>{
-  console.log(data);
+  //console.log(data);
 });
 
 const app = express();
@@ -69,13 +69,15 @@ app.post('/register', (req, res) => {
 })
 
 app.post('/createstream', (req, res) => {
-  const { title, subject, headline, description } = req.body;
+  const { url, title, subject, headline, description, is_private } = req.body;
     db.transaction(trx => {
       trx.insert({
+        url:url,
         title: title,
         subject: subject,
         headline: headline,
         description: description,
+        is_private: is_private
         
       })
       .into('streams')
