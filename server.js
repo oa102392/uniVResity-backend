@@ -102,14 +102,15 @@ app.get('/public_streams', (req, res) => {
     
     
 
-app.get('/profile/:id', (req, res) => {
-  const { id } = req.params;
-  db.select('*').from('users').where({id})
-    .then(user => {
-      if (user.length) {
-        res.json(user[0])
+app.get('/:url', (req, res) => {
+  const { url } = req.params;
+  db.select('*').from('streams').where({url})
+    .then(data => {
+      if (data.length) {
+        res.json(data[0])
       } else {
-        res.status(400).json('Not found')
+        //res.status(400).json('Not found')
+        res.json('VR event does not exist')
       }
     })
     .catch(err => res.status(400).json('error getting user'))
