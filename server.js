@@ -24,7 +24,7 @@ app.use(cors())
 app.use(bodyParser.json());
 
 app.get('/', (req, res)=> {
-  res.send(database.users);
+  res.send(db.users);
 })
 
 app.post('/login', (req, res) => {
@@ -91,6 +91,16 @@ app.post('/createstream', (req, res) => {
     .catch(err => res.status(400).json('unable to create stream'))
 })
 
+app.get('/public_streams', (req, res) => {
+  db.select('title', 'subject', 'headline', 'urlid').from('streams')
+    .where('is_private', '=', 'FALSE')
+    .then(data => {
+            res.json(data);
+          })
+          .catch(err => res.status(400).json('unable to get streams data'))
+      }) 
+    
+    
 
 app.get('/profile/:id', (req, res) => {
   const { id } = req.params;
