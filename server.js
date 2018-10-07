@@ -92,7 +92,7 @@ app.post('/createstream', (req, res) => {
 })
 
 app.get('/public_streams', (req, res) => {
-  db.select('title', 'subject', 'headline', 'urlid').from('streams')
+  db.select('*').from('streams')
     .where('is_private', '=', 'FALSE')
     .then(data => {
             res.json(data);
