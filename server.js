@@ -9,7 +9,7 @@ const db = knex({
   connection: {
     host : '127.0.0.1',
     user : 'postgres',
-    password : 'gunnba09',
+    password : 'altav1dra',
     database : 'vr'
   }
 });
@@ -117,16 +117,10 @@ app.get('/:url', (req, res) => {
     .catch(err => res.status(400).json('error getting user'))
 })
 
-app.put('/image', (req, res) => {
-  const { id } = req.body;
-  db('users').where('id', '=', id)
-  .increment('entries', 1)
-  .returning('entries')
-  .then(entries => {
-    res.json(entries[0]);
-  })
-  .catch(err => res.status(400).json('unable to get entries'))
-})
+app.post('/logout', (req, res) => {
+req.session.destroy();
+res.redirect('/');
+});
 
 app.listen(3000, ()=> {
   console.log('app is running on port 3000');
