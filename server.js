@@ -69,7 +69,7 @@ app.post('/register', (req, res) => {
 })
 
 app.post('/createstream', (req, res) => {
-  const { url, title, subject, headline, description, is_private } = req.body;
+  const { url, title, subject, headline, description, is_private, owner } = req.body;
     db.transaction(trx => {
       trx.insert({
         url:url,
@@ -77,7 +77,8 @@ app.post('/createstream', (req, res) => {
         subject: subject,
         headline: headline,
         description: description,
-        is_private: is_private
+        is_private: is_private,
+        owner: owner
         
       })
       .into('streams')
