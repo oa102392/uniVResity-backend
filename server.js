@@ -92,6 +92,26 @@ app.post('/createstream', (req, res) => {
     .catch(err => res.status(400).json('unable to create stream'))
 })
 
+app.post('/favorites', (req, res) => {
+  const { userid, url } = req.body;
+    db.transaction(trx => {
+      trx.insert({
+        userid: userid,
+        url:url
+      })
+      .into('favorites')
+      .returning('*')
+      .then(data => {
+        if ((data[0].userid === userid) && (data[0].url === url) ){
+          res.json('success')
+        } 
+      })
+      .then(trx.commit)
+      .catch(trx.rollback)
+    })
+    .catch(err => res.status(400).json('saved_already'))
+})
+
 app.get('/public_streams', (req, res) => {
   db.select('*').from('streams')
     .where('is_private', '=', 'FALSE')
@@ -102,6 +122,58 @@ app.get('/public_streams', (req, res) => {
       }) 
     
     
+app.post('/saved_streams', (req, res) => {
+  const { userid } = req.body;
+  db.join('favorites', 'streams.url', '=', 'favorites.url')
+    .select('streams.title', 'streams.headline', 'favorites.url').from('streams')
+    .where({'favorites.userid' : userid})
+    .then(data => {
+            res.json(data);
+          })
+          .catch(err => res.status(400).json(err))
+      }) 
+
+app.post('/owned_streams', (req, res) => {
+  const { userid } = req.body;
+  db.select('title', 'headline', 'url').from('streams')
+    .where({'owner' : userid})
+    .then(data => {
+            res.json(data);
+          })
+          .catch(err => res.status(400).json(err))
+      }) 
+    
+app.post('/unsave_stream', (req, res) => {
+  const { userid, url } = req.body;
+  db('favorites')
+    .where({'userid' : userid, 'url': url})
+    .del()
+    .then(data => {
+            res.json(data);
+          })
+          .catch(err => res.status(400).json(err))
+      }) 
+
+app.post('/delete_stream', (req, res) => {
+  const { userid, url } = req.body;
+  db('favorites')
+    .where({'url': url})
+    .del()
+    .then(data =>{
+      console.log(`deleted ${data}`);
+});
+
+  db('streams')
+    .where({'owner' : userid, 'url': url})
+    .del()
+    .then(data => {
+            res.json(data);
+          })
+          .catch(err => res.status(400).json(err))
+      }) 
+
+
+
 
 app.get('/:url', (req, res) => {
   const { url } = req.params;
