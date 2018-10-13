@@ -172,14 +172,14 @@ app.post('/delete_stream', (req, res) => {
 
 
 app.post('/settingsemail', (req , res)=> {
-  const { id, email } = req.body;
+  const { id } = req.body;
   db('users')
-  .where({'id': id , 'email' : email})
+  .where({'id', '=' , id})
   .update({
-      email: email
+      'email': email
     })
     .then(data => {
-            res.json(data);
+            res.json(data[0]);
           })
           .catch(err => res.status(400).json('unable to update email'))
       }) 
