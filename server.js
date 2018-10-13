@@ -172,8 +172,10 @@ app.post('/delete_stream', (req, res) => {
 
 
 app.post('/settingsemail', (req , res)=> {
-  db.select('users').where({'id': id})
-    .update({
+  const { id, email } = req.body;
+  db('users')
+  .where({'id': id})
+  .update({
       email: email
     })
     .then(data => {
