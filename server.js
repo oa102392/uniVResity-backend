@@ -177,8 +177,13 @@ app.post('/settingsemail', (req , res)=> {
   .update({
       email: req.body.email
     })
-    .then(data => {
-            res.json(data);
+    .then(function() {
+            db.select()
+            .from('users')
+            .then(function(users){
+              res.send(users);
+
+            })
           })
           .catch(err => res.status(400).json('unable to update email'))
       }) 
