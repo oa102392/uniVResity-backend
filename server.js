@@ -7,8 +7,10 @@ const knex = require('knex')
 const db = knex({
   client: 'pg',
   connection: {
-    connectionString : process.env.DATABASE_URL,
-    ssl: true,
+    host : '127.0.0.1',
+    user : '',
+    password : '',
+    database : 'unitest'
   }
 });
 
@@ -26,6 +28,7 @@ app.get('/', (req, res)=> {
 })
 
 app.post('/login', (req, res) => {
+
   db.select('email', 'hash').from('users')
     .where('email', '=', req.body.email)
     .then(data => {
@@ -43,6 +46,48 @@ app.post('/login', (req, res) => {
     })
     .catch(err => res.status(400).json('wrong credentials'))
 })
+
+app.put('/settingsemail', (req , res)=> {
+  db.select('id')
+  .from('users')
+  .where('id', '=', req.body.id)
+  .update({
+      email: req.body.email
+    })
+    .returning('*')
+    .then(user => {
+            res.json(user[0]);
+          })
+  })
+
+app.put('/settingspassword', (req , res)=> {
+  const hash = bcrypt.hashSync(req.body.password);
+  db.select('id')
+  .from('users')
+  .where('id', '=', req.body.id)
+  .update({
+      hash: hash
+    })
+    .returning('*')
+    .then(user => {
+            res.json(user[0]);
+          })
+  })
+
+app.put('/settingsbio', (req , res)=> {
+  db.select('id')
+  .from('users')
+  .where('id', '=', req.body.id)
+  .update({
+      bio: req.body.bio
+    })
+    .returning('*')
+    .then(user => {
+            res.json(user[0]);
+          })
+  })
+
+
 
 app.post('/register', (req, res) => {
   const { email, name, password, bio } = req.body;
@@ -65,6 +110,8 @@ app.post('/register', (req, res) => {
     })
     .catch(err => res.status(400).json('unable to register'))
 })
+
+       
 
 app.post('/createstream', (req, res) => {
   const { url, title, subject, headline, description, is_private, owner } = req.body;
@@ -171,19 +218,6 @@ app.post('/delete_stream', (req, res) => {
       }) 
 
 
-app.post('/settingsemail', (req , res)=> {
-  db('users')
-  .where('id', req.body.id)
-  .update({
-      email: req.body.email
-    })         
-      .catch(err => res.status(400).json({ msg: 'unable to update email', err }))
-      }) 
-    
-
-
-
-
 app.get('/:url', (req, res) => {
   const { url } = req.params;
   db.select('*').from('streams').where({url})
@@ -203,6 +237,6 @@ req.session.destroy();
 res.redirect('/');
 });
 
-app.listen(process.env.PORT || 3000, ()=> {
-  console.log(`app is running on port ${process.env.PORT}`);
+app.listen( 3000, ()=> {
+  console.log(`app is running on port 3000`);
 })
