@@ -171,6 +171,19 @@ app.post('/delete_stream', (req, res) => {
       }) 
 
 
+app.post('/settingsemail', (req , res)=> {
+  db.select('users').where({'id': id})
+    .update({
+      email: email
+    })
+    .then(data => {
+            res.json(data);
+          })
+          .catch(err => res.status(400).json('unable to update email'))
+      }) 
+    
+
+
 
 
 app.get('/:url', (req, res) => {
