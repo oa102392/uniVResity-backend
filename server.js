@@ -179,7 +179,7 @@ app.post('/settingsemail', (req , res)=> {
       'email': email
     })
     .then(data => {
-            res.json(data[0]);
+            res.json(data);
           })
           .catch(err => res.status(400).json('unable to update email'))
       }) 
