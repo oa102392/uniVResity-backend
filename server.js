@@ -173,7 +173,7 @@ app.post('/delete_stream', (req, res) => {
 
 app.post('/settingsemail', (req , res)=> {
   db('users')
-  .where('id', req.params.id)
+  .where('id', req.body.id)
   .update({
       email: req.body.email
     })
