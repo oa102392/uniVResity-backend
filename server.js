@@ -2,20 +2,17 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt-nodejs');
 const cors = require('cors');
-const knex = require('knex')
+const knex = require('knex');
+const multer = require('multer'); 
 
 const db = knex({
   client: 'pg',
   connection: {
     host : '127.0.0.1',
-    user : '',
-    password : '',
-    database : 'unitest'
+    user : 'postgres',
+    password : 'altav1dra',
+    database : 'vr'
   }
-});
-
-db.select('*').from('users').then(data =>{
-  //console.log(data);
 });
 
 const app = express();
@@ -27,8 +24,45 @@ app.get('/', (req, res)=> {
   res.send('it is working')
 })
 
-app.post('/login', (req, res) => {
+app.use('/photos', express.static(__dirname + '/public/uploads'));
 
+// Set The Storage Engine
+const storage = multer.diskStorage({
+  destination: './public/uploads/',
+  filename: function(req, file, cb){
+    cb(null, file.fieldname + '-' + Date.now() + '.jpg' );
+  }
+});
+
+// Init Upload
+const upload = multer({
+  storage: storage,
+  limits:{fileSize: 1000000},
+}).single('image');
+
+app.post('/upload', (req, res) => {
+  upload(req, res, (err) => {
+    if (err) {
+      console.log(err);
+    } else {
+      //console.log(req.file);
+      res.send(req.file.filename);
+    }
+  });
+});
+
+const deleteImage = (fileName) => {
+  var fs = require('fs');
+  if (fileName !=='noimage.png' && fileName !=='nouserphoto.png'){
+    fs.unlink(`public/uploads/${fileName}`, (err) => {
+      if (err) console.log(`File ${fileName} was not deleted`);
+      else console.log(`${fileName} was deleted`);
+    });
+    }
+}
+
+
+app.post('/login', (req, res) => {
   db.select('email', 'hash').from('users')
     .where('email', '=', req.body.email)
     .then(data => {
@@ -90,7 +124,7 @@ app.put('/settingsbio', (req , res)=> {
 
 
 app.post('/register', (req, res) => {
-  const { email, name, password, bio } = req.body;
+  const { email, name, password, bio, photo } = req.body;
   const hash = bcrypt.hashSync(password);
     db.transaction(trx => {
       trx.insert({
@@ -98,7 +132,8 @@ app.post('/register', (req, res) => {
         email: email,
         name: name,
         bio: bio,
-        joined: new Date()
+        joined: new Date(),
+        photo: photo
       })
       .into('users')
       .returning('*')
@@ -111,10 +146,10 @@ app.post('/register', (req, res) => {
     .catch(err => res.status(400).json('unable to register'))
 })
 
-       
+    
 
 app.post('/createstream', (req, res) => {
-  const { url, title, subject, headline, description, is_private, owner } = req.body;
+  const { url, title, subject, headline, description, is_private, owner, photo } = req.body;
     db.transaction(trx => {
       trx.insert({
         url:url,
@@ -123,7 +158,8 @@ app.post('/createstream', (req, res) => {
         headline: headline,
         description: description,
         is_private: is_private,
-        owner: owner
+        owner: owner,
+        photo: photo
         
       })
       .into('streams')
@@ -134,7 +170,7 @@ app.post('/createstream', (req, res) => {
       .then(trx.commit)
       .catch(trx.rollback)
     })
-    .catch(err => res.status(400).json('unable to create stream'))
+    .catch(err => res.status(400).json(`unable to create stream, error is ${err}`))
 })
 
 app.post('/favorites', (req, res) => {
@@ -180,7 +216,7 @@ app.post('/saved_streams', (req, res) => {
 
 app.post('/owned_streams', (req, res) => {
   const { userid } = req.body;
-  db.select('title', 'headline', 'url').from('streams')
+  db.select('title', 'headline', 'url', 'photo').from('streams')
     .where({'owner' : userid})
     .then(data => {
             res.json(data);
@@ -200,12 +236,13 @@ app.post('/unsave_stream', (req, res) => {
       }) 
 
 app.post('/delete_stream', (req, res) => {
-  const { userid, url } = req.body;
+  const { userid, url, photo } = req.body;
   db('favorites')
     .where({'url': url})
     .del()
     .then(data =>{
       console.log(`deleted ${data}`);
+      deleteImage(photo);
 });
 
   db('streams')
