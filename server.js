@@ -24,6 +24,7 @@ app.get('/', (req, res)=> {
   res.send('it is working')
 })
 
+
 app.use('/photos', express.static(__dirname + '/public/uploads'));
 
 // Set The Storage Engine
@@ -270,7 +271,7 @@ app.get('/:url', (req, res) => {
 })
 
 app.post('/logout', (req, res) => {
-req.session.destroy();
+//req.session.destroy();
 res.redirect('/');
 });
 
