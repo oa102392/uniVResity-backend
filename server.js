@@ -8,10 +8,8 @@ const multer = require('multer');
 const db = knex({
   client: 'pg',
   connection: {
-    host : '127.0.0.1',
-    user : 'postgres',
-    password : 'altav1dra',
-    database : 'vr'
+    connectionString : process.env.DATABASE_URL,
+    ssl: true,
   }
 });
 
@@ -122,6 +120,18 @@ app.put('/settingsbio', (req , res)=> {
           })
   })
 
+app.post('/settingsphoto', (req , res)=> {
+  db.select('id')
+  .from('users')
+  .where('id', '=', req.body.id)
+  .update({
+      photo: req.body.photo
+    })
+    .returning('*')
+    .then(user => {
+            res.json(user[0]);
+          })
+  })
 
 
 app.post('/register', (req, res) => {
@@ -275,6 +285,6 @@ app.post('/logout', (req, res) => {
 res.redirect('/');
 });
 
-app.listen( 3000, ()=> {
-  console.log(`app is running on port 3000`);
+app.listen(process.env.PORT || 3000, ()=> {
+  console.log(`app is running on port ${process.env.PORT}`);
 })
